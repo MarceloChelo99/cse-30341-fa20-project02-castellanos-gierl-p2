@@ -13,7 +13,14 @@
  * @return  Newly allocated Request structure.
  */
 Request * request_create(const char *method, const char *uri, const char *body) {
-    return NULL;
+    Request *r = calloc(1, sizeof(Request));
+    if (r == NULL) exit(1);
+
+    r->method   = method;
+    r->uri      = uri;
+    r->body     = body;
+
+    return r;
 }
 
 /**
@@ -21,6 +28,7 @@ Request * request_create(const char *method, const char *uri, const char *body) 
  * @param   r           Request structure.
  */
 void request_delete(Request *r) {
+    free(r);
 }
 
 /**
