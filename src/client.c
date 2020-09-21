@@ -122,11 +122,13 @@ void mq_start(MessageQueue *mq) {
  * @param   mq      Message Queue structure.
  */
 void mq_stop(MessageQueue *mq) {
+	mutex_lock(&mq->lock);
 	mq->shutdown = true;
+	mutex_unlock(&mq->lock);
 	Request *r = (SENTINEL, NULL, NULL);
 	queue_push(mq->outgoing, r);
-	thread_join(&mq->puller, NULL);
-	thread_join(&mq->pusher, NULL);
+	thread_join(mq->puller, NULL);
+	thread_join(mq->pusher, NULL);
 }
 
 /**
@@ -134,7 +136,10 @@ void mq_stop(MessageQueue *mq) {
  * @param   mq      Message Queue structure.
  */
 bool mq_shutdown(MessageQueue *mq) {
-    return mq->shutdown;
+	mutex_lock(&mq->lock);
+	bool status = mq->shutdown;
+	mutex_unlock(&mq->lock);
+	return status;
 }
 
 /* Internal Functions */
@@ -147,12 +152,11 @@ void * mq_pusher(void *arg) {
 	MessageQueue *mq = (MessageQueue*) arg;
 	char buf[BUFSIZ];
 	while(!mq_shutdown(mq)) {
-		Request *r = queue_pop(mq->outgoing);
 		FILE *fs = socket_connect(mq->host, mq->port);
 		if(!fs) {
-			request_delete(r);
 			continue;
 		}
+		Request *r = queue_pop(mq->outgoing);
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
 		request_delete(r);
@@ -171,11 +175,11 @@ void * mq_puller(void *arg) {
 	char buf[BUFSIZ];
 	size_t length = 0;
 	while(!mq_shutdown(mq)) {
-		Request *r = sizeof(Request);
 		FILE *fs = socket_connect(mq->host, mq->port);
 		if(!fs) {
 			continue;
 		}
+		Request *r = malloc(sizeof(Request));
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
 		if(strstr(buf, "200")) {

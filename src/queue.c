@@ -77,7 +77,11 @@ Request * queue_pop(Queue *q) {
     }
 
     Request *temp = q->head;
-    q->head = q->head->next;
+	if(q->head->next) {
+		q->head = q->head->next;
+	} else {
+		q->head = NULL;
+	}
     q->size--;
     
     cond_signal(&q->cond);
