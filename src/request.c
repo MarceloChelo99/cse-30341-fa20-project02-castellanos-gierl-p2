@@ -16,9 +16,9 @@ Request * request_create(const char *method, const char *uri, const char *body) 
     Request *r = calloc(1, sizeof(Request));
     if (r == NULL) exit(1);
 
-    r->method   = method;
-    r->uri      = uri;
-    r->body     = body;
+    r->method   = (char *) method;
+    r->uri      = (char *) uri;
+    r->body     = (char*) body;
 
     return r;
 }
@@ -28,6 +28,7 @@ Request * request_create(const char *method, const char *uri, const char *body) 
  * @param   r           Request structure.
  */
 void request_delete(Request *r) {
+    free(r->next);
     free(r);
 }
 
@@ -43,6 +44,11 @@ void request_delete(Request *r) {
  * @param   fs          Socket file stream.
  */
 void request_write(Request *r, FILE *fs) {
+   fprintf(fs, "%s %s HTTP/1.0\r\n\
+                Content-Length: %lu\r\n\
+                \r\n\
+                %s",
+                r->method, r->uri, strlen(r->body), r->body); 
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */ 
