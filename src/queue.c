@@ -45,11 +45,19 @@ void queue_delete(Queue *q) {
 void queue_push(Queue *q, Request *r) {
     mutex_lock(&q->lock);
     
-    if(q->tail != NULL){
-        q->tail->next = r;
-    }    
-    
-    q->tail = r;
+	if(q->head) {
+		if(q->tail) {
+			q->tail->next = r;
+			q->tail = r;
+		} else {
+			q->head->next = r;
+			q->tail = r;
+		}
+	} else {
+		q->head = r;
+		q->tail = r;
+	}
+
     q->size++;
 
     cond_signal(&q->cond);
