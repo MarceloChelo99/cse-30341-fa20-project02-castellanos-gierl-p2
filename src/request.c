@@ -30,6 +30,7 @@ Request * request_create(const char *method, const char *uri, const char *body) 
 void request_delete(Request *r) {
     free(r->next);
     free(r);
+
 }
 
 /**
