@@ -15,9 +15,9 @@
 Request * request_create(const char *method, const char *uri, const char *body) {
     Request *r = calloc(1, sizeof(Request));
     if (r) {
-	    r->method   = strdup(method);
-	    r->uri      = strdup(uri);
-	    r->body     = strdup(body);
+		if(method) r->method = strdup(method);
+	    if(uri)    r->uri    = strdup(uri);
+	    if(body)   r->body   = strdup(body);
 	}
     return r;
 }
