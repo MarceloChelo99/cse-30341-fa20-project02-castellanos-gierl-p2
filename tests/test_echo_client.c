@@ -58,22 +58,32 @@ int main(int argc, char *argv[]) {
 
     /* Create and start message queue */
     MessageQueue *mq = mq_create(name, host, port);
+    debug("Created mq");
     assert(mq);
 
     mq_subscribe(mq, TOPIC);
+    debug("Subscribed");
     mq_unsubscribe(mq, TOPIC);
+    debug("Unsubscribed");
     mq_subscribe(mq, TOPIC);
+    debug("Subscribed once again");
     mq_start(mq);
+    debug("Start");
 
     /* Run and wait for incoming and outgoing threads */
     Thread incoming;
     Thread outgoing;
     thread_create(&incoming, NULL, incoming_thread, mq);
+    debug("Created  incoming thread");
     thread_create(&outgoing, NULL, outgoing_thread, mq);
+    debug("Created outgong thread");
     thread_join(incoming, NULL);
+    debug("Joined incoming thread");
     thread_join(outgoing, NULL);
+    debug("Joined outgoing thread");
 
     mq_delete(mq);
+    debug("Deleted message queue");
     return 0;
 }
 
