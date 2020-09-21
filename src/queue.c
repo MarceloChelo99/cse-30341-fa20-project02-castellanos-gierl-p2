@@ -11,8 +11,8 @@ Queue * queue_create() {
     
     if (q) {
 	    q->size = 0;
-		q->head = malloc(sizeof(Request));
-		q->tail = malloc(sizeof(Request));
+		mutex_init(&q->lock, NULL);
+		cond_init(&q->cond, NULL);
     }
     return q;
 }
@@ -24,7 +24,7 @@ Queue * queue_create() {
 void queue_delete(Queue *q) {
     
     for(Request *ptr = q->head; ptr; ptr = ptr->next){
-        free(ptr);
+		request_delete(ptr);
     }
 
     free(q);
