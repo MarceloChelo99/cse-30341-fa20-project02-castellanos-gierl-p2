@@ -30,7 +30,6 @@ void request_delete(Request *r) {
 	free(r->method);
 	free(r->uri);
 	free(r->body);
-    free(r->next);
     free(r);
 
 }
