@@ -35,8 +35,7 @@ MessageQueue * mq_create(const char *name, const char *host, const char *port) {
 		mq->shutdown = false;
 
 		mutex_init(&mq->lock, NULL);
-		cond_init(&mq->consumed, NULL);
-		cond_init(&mq->produced, NULL);
+		cond_init(&mq->cond, NULL);
 	}
     return mq;
 }
