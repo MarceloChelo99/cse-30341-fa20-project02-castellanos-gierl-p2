@@ -169,17 +169,26 @@ void * mq_pusher(void *arg) {
  **/
 void * mq_puller(void *arg) {
 	MessageQueue *mq = (MessageQueue*) arg;
+	char buf[BUFSIZ];
+	size_t length = 0;
 	while(!mq_shutdown(mq)) {
 		Request *r = sizeof(Request);
 		FILE *fs = socket_connect(mq->host, mq->port);
 		if(!fs) {
-			request_delete(r);
 			continue;
 		}
 		request_write(r, fs);
-		// read response
-		// put request with body into incoming 
-		request_delete(r);
+		fgets(buf, BUFSIZ, fs);
+		if(strstr(buf, "200")) {
+			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
+				sscanf(buf, "Content-Length: %ld", &length);
+			}
+			if(length > 0) {
+				r->body = malloc((length + 1) * sizeof(char));
+				fread(r->body, sizeof(char), length, fs);
+				queue_push(mq->incoming, r);
+			}
+		}
 		fclose(fs);
 	}
     pthread_exit((void *)0);
