@@ -46,8 +46,13 @@ void request_delete(Request *r) {
  * @param   fs          Socket file stream.
  */
 void request_write(Request *r, FILE *fs) {
-   fprintf(fs, "%s %s HTTP/1.0\r\nContent-Length: %zu\r\n\r\n%s", 
+	if(!r->body) {
+		fprintf(fs, "%s %s HTTP/1.0\r\nContent-Length: 0\r\n\r\n\r\n", 
+			r->method, r->uri); 
+	} else {
+		fprintf(fs, "%s %s HTTP/1.0\r\nContent-Length: %zu\r\n\r\n%s", 
 			r->method, r->uri, strlen(r->body), r->body); 
+	}
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */ 

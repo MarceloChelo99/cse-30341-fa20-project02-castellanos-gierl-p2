@@ -183,6 +183,7 @@ void * mq_puller(void *arg) {
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
 		if(strstr(buf, "200")) {
+			debug("buffer %s", buf);
 			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
