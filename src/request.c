@@ -14,12 +14,11 @@
  */
 Request * request_create(const char *method, const char *uri, const char *body) {
     Request *r = calloc(1, sizeof(Request));
-    if (r == NULL) exit(1);
-
-    r->method   = (char *) method;
-    r->uri      = (char *) uri;
-    r->body     = (char*) body;
-
+    if (r) {
+	    r->method   = (char *) method;
+	    r->uri      = (char *) uri;
+	    r->body     = (char *) body;
+	}
     return r;
 }
 
