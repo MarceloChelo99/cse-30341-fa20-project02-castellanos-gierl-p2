@@ -9,10 +9,11 @@
 Queue * queue_create() {
     Queue *q = calloc(1, sizeof(Queue));
     
-    if (q == NULL) exit(1);
-
-    q->size = 0;
-    
+    if (q) {
+	    q->size = 0;
+		q->head = malloc(sizeof(Request));
+		q->tail = malloc(sizeof(Request));
+    }
     return q;
 }
 
@@ -61,7 +62,7 @@ Request * queue_pop(Queue *q) {
         cond_wait(&q->cond, &q->lock);
     }
 
-    Request temp = q->head;
+    Request *temp = q->head;
     q->head = q->head->next;
     q->size--;
     

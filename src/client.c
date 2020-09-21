@@ -27,9 +27,9 @@ MessageQueue * mq_create(const char *name, const char *host, const char *port) {
 
 	MessageQueue *mq = calloc(1, sizeof(MessageQueue));
 	if(mq) {
-		mq->name = name;
-		mq->host = host;
-		mq->port = port;
+		strcpy(mq->name, name);
+		strcpy(mq->host, host);
+		strcpy(mq->port, port);
 		mq->outgoing = queue_create();
 		mq->incoming = queue_create();
 		mq->shutdown = false;
