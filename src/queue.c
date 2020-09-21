@@ -23,8 +23,14 @@ Queue * queue_create() {
  */
 void queue_delete(Queue *q) {
     
-    for(Request *ptr = q->head; ptr; ptr = ptr->next){
-		request_delete(ptr);
+    Request *curr = q->head;
+    Request *next;
+    
+
+    while(curr){
+        next = curr->next;
+        request_delete(curr);
+        curr = next;
     }
 
     free(q);
