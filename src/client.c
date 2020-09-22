@@ -78,6 +78,7 @@ char * mq_retrieve(MessageQueue *mq) {
 	request_delete(r);
 	debug("body %s and sen %s", body, SENTINEL);
 	if(streq(body, SENTINEL)) {
+		free(body);
 		return NULL;
 	}
     return body;
@@ -164,7 +165,6 @@ void * mq_pusher(void *arg) {
 		request_delete(r);
 		fclose(fs);
 	}
-    //pthread_exit((void *)0);
     return (void*) 0;
 }
 
@@ -193,16 +193,18 @@ void * mq_puller(void *arg) {
 			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
-			if(length > 0) {
-				r->body = calloc(length + 1, sizeof(char));
-				fread(r->body, 1, length, fs);
-				if(r->body) queue_push(mq->incoming, r);
-				else request_delete(r);
+			r->body = calloc(length + 1, sizeof(char));
+			fread(r->body, 1, length, fs);
+			if(r->body) {
+				queue_push(mq->incoming, r);
+			} else {
+				request_delete(r);
 			}
+		} else {
+			request_delete(r);
 		}
 		fclose(fs);
 	}
-    //pthread_exit((void *)0);
     return (void *) 0;
 }
 
