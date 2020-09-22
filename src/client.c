@@ -124,14 +124,19 @@ void mq_start(MessageQueue *mq) {
  * @param   mq      Message Queue structure.
  */
 void mq_stop(MessageQueue *mq) {
+	debug("beginning of stop");
 	mutex_lock(&mq->lock);
 	mq->shutdown = true;
 	mutex_unlock(&mq->lock);
+	debug("after shutdown");
 	//Request *r = (SENTINEL, NULL, NULL);
 	//queue_push(mq->outgoing, r);
     mq_publish(mq, SENTINEL, SENTINEL);
+	debug("after publish");
 	thread_join(mq->puller, NULL);
+	debug("after join 1");
 	thread_join(mq->pusher, NULL);
+	debug("after join 2");
 }
 
 /**
@@ -191,7 +196,6 @@ void * mq_puller(void *arg) {
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
 		if(strstr(buf, "200 OK")) {
-			debug("buffer %s", buf);
 			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
