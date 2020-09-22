@@ -36,6 +36,13 @@ void *outgoing_thread(void *arg) {
     MessageQueue *mq = (MessageQueue *)arg;
     
     char body[BUFSIZ];
+    char on_enter[BUFSIZ];
+    
+    sprintf(on_enter, "%s has entered the chatroom!\n", mq->name);
+    mq_publish(mq, TOPIC, "============================");
+    mq_publish(mq, TOPIC, on_enter);
+    mq_publish(mq, TOPIC, "============================");
+
     
     while (fgets(body, BUFSIZ, stdin) && !streq(body, "/exit\n")) {
         char buffer[BUFSIZ];
@@ -45,7 +52,11 @@ void *outgoing_thread(void *arg) {
         strcat(buffer, body);
 
         mq_publish(mq, TOPIC, buffer);
-    }
+    }   
+    
+    sprintf(on_enter, "%s has left the chatroom!\n", mq->name);
+    mq_publish(mq, TOPIC, on_enter);
+
 
     //sleep(5);
     mq_stop(mq);
