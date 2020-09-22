@@ -129,7 +129,7 @@ void mq_stop(MessageQueue *mq) {
 	mutex_unlock(&mq->lock);
 	//Request *r = (SENTINEL, NULL, NULL);
 	//queue_push(mq->outgoing, r);
-        mq_publish(mq, SENTINEL, SENTINEL);
+    mq_publish(mq, SENTINEL, SENTINEL);
 	thread_join(mq->puller, NULL);
 	thread_join(mq->pusher, NULL);
 }
@@ -176,6 +176,10 @@ void * mq_pusher(void *arg) {
  **/
 void * mq_puller(void *arg) {
 	MessageQueue *mq = (MessageQueue*) arg;
+			
+	char uri[BUFSIZ];
+	sprintf(uri, "/queue/%s", mq->name);
+
 	char buf[BUFSIZ];
 	size_t length = 0;
 	while(!mq_shutdown(mq)) {
@@ -183,18 +187,20 @@ void * mq_puller(void *arg) {
 		if(!fs) {
 			continue;
 		}
-		Request *r = malloc(sizeof(Request));
+		Request *r = request_create("GET", uri, NULL);
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
-		if(strstr(buf, "200")) {
+		if(strstr(buf, "200 OK")) {
 			debug("buffer %s", buf);
 			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
 			if(length > 0) {
 				r->body = malloc((length + 1) * sizeof(char));
-				fread(r->body, sizeof(char), length, fs);
-				queue_push(mq->incoming, r);
+				fread(r->body, 1, length, fs);
+				
+				if(r->body) queue_push(mq->incoming, r);
+				else request_delete(r);
 			}
 		}
 		fclose(fs);

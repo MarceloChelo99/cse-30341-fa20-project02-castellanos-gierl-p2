@@ -36,14 +36,13 @@ void *outgoing_thread(void *arg) {
 
     for (size_t i = 0; i < NMESSAGES; i++) {
     	sprintf(body, "%lu. Hello from %lu\n", i, time(NULL));
-		debug("before publish");
     	mq_publish(mq, TOPIC, body);
-		debug("after publish");
     }
 
 	debug("after loop");
     sleep(5);
     mq_stop(mq);
+	debug("stop");
     return NULL;
 }
 
