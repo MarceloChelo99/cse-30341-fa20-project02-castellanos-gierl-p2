@@ -36,7 +36,9 @@ MessageQueue * mq_create(const char *name, const char *host, const char *port) {
 
 		mutex_init(&mq->lock, NULL);
 		cond_init(&mq->cond, NULL);
-	}
+        }else {
+            return NULL;
+        }
     return mq;
 }
 
@@ -46,8 +48,8 @@ MessageQueue * mq_create(const char *name, const char *host, const char *port) {
  */
 void mq_delete(MessageQueue *mq) {
 	if(mq) {
-		queue_delete(mq->outgoing);
-		queue_delete(mq->incoming);
+		if (mq->outgoing) queue_delete(mq->outgoing);
+		if (mq->incoming) queue_delete(mq->incoming);
 		free(mq);
 	}
 }
@@ -112,8 +114,8 @@ void mq_start(MessageQueue *mq) {
 	sprintf(uri, "/subscription/%s/%s", SENTINEL, SENTINEL);
 	Request *r = request_create("PUT", uri, NULL);
 	queue_push(mq->outgoing, r);
-	thread_create(&mq->puller, NULL, mq_puller, mq);
-	thread_create(&mq->pusher, NULL, mq_pusher, mq);
+	thread_create(&mq->puller, NULL, mq_puller, (void *) mq);
+	thread_create(&mq->pusher, NULL, mq_pusher, (void *) mq);
 }
 
 /**
@@ -125,8 +127,9 @@ void mq_stop(MessageQueue *mq) {
 	mutex_lock(&mq->lock);
 	mq->shutdown = true;
 	mutex_unlock(&mq->lock);
-	Request *r = (SENTINEL, NULL, NULL);
-	queue_push(mq->outgoing, r);
+	//Request *r = (SENTINEL, NULL, NULL);
+	//queue_push(mq->outgoing, r);
+        mq_publish(mq, SENTINEL, SENTINEL);
 	thread_join(mq->puller, NULL);
 	thread_join(mq->pusher, NULL);
 }
@@ -162,7 +165,8 @@ void * mq_pusher(void *arg) {
 		request_delete(r);
 		fclose(fs);
 	}
-    pthread_exit((void *)0);
+    //pthread_exit((void *)0);
+    return (void*) 0;
 }
 
 /**
@@ -195,7 +199,8 @@ void * mq_puller(void *arg) {
 		}
 		fclose(fs);
 	}
-    pthread_exit((void *)0);
+    //pthread_exit((void *)0);
+    return (void *) 0;
 }
 
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */
