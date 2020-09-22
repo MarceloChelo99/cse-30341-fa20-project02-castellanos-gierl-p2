@@ -76,6 +76,10 @@ char * mq_retrieve(MessageQueue *mq) {
 	Request *r = queue_pop(mq->incoming);
 	char *body = strdup(r->body);
 	request_delete(r);
+	debug("body %s and sen %s", body, SENTINEL);
+	if(streq(body, SENTINEL)) {
+		return NULL;
+	}
     return body;
 }
 
@@ -124,13 +128,9 @@ void mq_stop(MessageQueue *mq) {
 	mutex_lock(&mq->lock);
 	mq->shutdown = true;
 	mutex_unlock(&mq->lock);
-	debug("after shutdown");
     mq_publish(mq, SENTINEL, SENTINEL);
-	debug("after publish");
 	thread_join(mq->puller, NULL);
-	debug("after join 1");
 	thread_join(mq->pusher, NULL);
-	debug("after join 2");
 }
 
 /**
@@ -194,9 +194,8 @@ void * mq_puller(void *arg) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
 			if(length > 0) {
-				r->body = malloc((length + 1) * sizeof(char));
+				r->body = calloc(length + 1, sizeof(char));
 				fread(r->body, 1, length, fs);
-				
 				if(r->body) queue_push(mq->incoming, r);
 				else request_delete(r);
 			}
