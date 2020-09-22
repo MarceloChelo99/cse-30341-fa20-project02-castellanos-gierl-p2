@@ -20,7 +20,7 @@ TEST_PROGRAMS   = $(subst tests,bin,$(basename $(TEST_OBJECTS)))
 
 # Rules
 
-all:	$(CLIENT_LIBRARY)
+all:	$(CLIENT_LIBRARY) bin/message
 
 %.o:			%.c $(CLIENT_HEADERS)
 	@echo "Compiling $@"
@@ -29,6 +29,9 @@ all:	$(CLIENT_LIBRARY)
 $(CLIENT_LIBRARY):	$(CLIENT_OBJECTS)
 	@echo "Linking   $@"
 	@$(AR) $(ARFLAGS) $@ $^
+
+bin/message: src/message.o $(CLIENT_LIBRARY)
+	@$(LD) $(LDFLAGS) -o  $@ $^
 
 bin/%:  		tests/%.o $(CLIENT_LIBRARY)
 	@echo "Linking   $@"
@@ -60,5 +63,8 @@ clean:
 	
 	@echo "Removing  test programs"
 	@rm -f $(TEST_PROGRAMS)
+
+	@echo "Removing chat app"
+	@rm -f bin/message
 
 .PRECIOUS: %.o
