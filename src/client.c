@@ -76,7 +76,6 @@ char * mq_retrieve(MessageQueue *mq) {
 	Request *r = queue_pop(mq->incoming);
 	char *body = strdup(r->body);
 	request_delete(r);
-	debug("body %s and sen %s", body, SENTINEL);
 	if(streq(body, SENTINEL)) {
 		free(body);
 		return NULL;
