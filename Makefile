@@ -30,6 +30,9 @@ $(CLIENT_LIBRARY):	$(CLIENT_OBJECTS)
 	@echo "Linking   $@"
 	@$(AR) $(ARFLAGS) $@ $^
 
+bin/message: src/message.o $(CLIENT_LIBRARY)
+	$(LD) $(LDFLAGS) -o  $@ $^
+
 bin/%:  		tests/%.o $(CLIENT_LIBRARY)
 	@echo "Linking   $@"
 	@$(LD) $(LDFLAGS) -o $@ $^

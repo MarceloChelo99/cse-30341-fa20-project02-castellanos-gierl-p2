@@ -1,6 +1,8 @@
 /* echo_client.c: Message Queue Echo Client test */
 
 #include "mq/client.h"
+#include "mq/string.h"
+
 
 
 #include <assert.h>
@@ -35,8 +37,14 @@ void *outgoing_thread(void *arg) {
     
     char body[BUFSIZ];
     
-    while (fgets(body, BUFSIZ, stdin)) {
-        mq_publish(mq, TOPIC, body);
+    while (fgets(body, BUFSIZ, stdin) && !streq(body, "/exit\n")) {
+        char buffer[BUFSIZ];
+
+        strcpy(buffer, mq->name);
+        strcat(buffer, ": ");
+        strcat(buffer, body);
+
+        mq_publish(mq, TOPIC, buffer);
     }
 
     //sleep(5);
@@ -51,13 +59,15 @@ int main(int argc, char *argv[]) {
     char *name = getenv("USER");
     char *host = "localhost";
     char *port = "9620";
-
+    
     if (argc > 1) { host = argv[1]; }
     if (argc > 2) { port = argv[2]; }
-    if (!name)    { name = "echo_client_test";  }
+    if (argc > 3) { name = argv[3]; }
+    //if (!name)    { name = "echo_client_test";  }
 
     /* Create and start message queue */
     MessageQueue *mq = mq_create(name, host, port);
+    
 
     mq_subscribe(mq, TOPIC);
     //mq_unsubscdribe(mq, TOPIC);
