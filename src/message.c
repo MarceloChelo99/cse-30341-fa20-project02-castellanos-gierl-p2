@@ -2,9 +2,6 @@
 
 #include "mq/client.h"
 #include "mq/string.h"
-
-
-
 #include <assert.h>
 #include <time.h>
 #include <unistd.h>
@@ -12,20 +9,17 @@
 /* Constants */
 
 const char * TOPIC     = "chatroom";
-//const size_t NMESSAGES = 10;
 
 /* Threads */
 
 void *incoming_thread(void *arg) {
     MessageQueue *mq = (MessageQueue *)arg;
-    size_t messages = 0;
 
     while (!mq_shutdown(mq)) {
     	char *message = mq_retrieve(mq);
 	if (message) {
             printf("%s\n", message);
 	    free(message);
-	    messages++;
 	}
     }
     
@@ -55,11 +49,10 @@ void *outgoing_thread(void *arg) {
     }   
     
     sprintf(on_enter, "%s has left the chatroom!\n", mq->name);
+
     mq_publish(mq, TOPIC, on_enter);
-
-
-    //sleep(5);
     mq_stop(mq);
+
     return NULL;
 }
 
@@ -74,15 +67,12 @@ int main(int argc, char *argv[]) {
     if (argc > 1) { host = argv[1]; }
     if (argc > 2) { port = argv[2]; }
     if (argc > 3) { name = argv[3]; }
-    //if (!name)    { name = "echo_client_test";  }
 
     /* Create and start message queue */
     MessageQueue *mq = mq_create(name, host, port);
     
 
     mq_subscribe(mq, TOPIC);
-    //mq_unsubscdribe(mq, TOPIC);
-    //mq_subscribe(mq, TOPIC);
     mq_start(mq);
 
     /* Run and wait for incoming and outgoing threads */

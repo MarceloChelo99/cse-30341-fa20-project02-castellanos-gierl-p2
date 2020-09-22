@@ -24,7 +24,6 @@ struct MessageQueue {
 	Thread puller;
 	Thread pusher;
 	Mutex lock;
-	Cond cond;
 };
 
 MessageQueue *	mq_create(const char *name, const char *host, const char *port);
