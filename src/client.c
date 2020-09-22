@@ -30,12 +30,12 @@ MessageQueue * mq_create(const char *name, const char *host, const char *port) {
 		strcpy(mq->name, name);
 		strcpy(mq->host, host);
 		strcpy(mq->port, port);
+
 		mq->outgoing = queue_create();
 		mq->incoming = queue_create();
 		mq->shutdown = false;
 
 		mutex_init(&mq->lock, NULL);
-		cond_init(&mq->cond, NULL);
         }else {
             return NULL;
         }
@@ -128,7 +128,9 @@ void mq_stop(MessageQueue *mq) {
 	mutex_lock(&mq->lock);
 	mq->shutdown = true;
 	mutex_unlock(&mq->lock);
-    mq_publish(mq, SENTINEL, SENTINEL);
+
+        mq_publish(mq, SENTINEL, SENTINEL);
+
 	thread_join(mq->puller, NULL);
 	thread_join(mq->pusher, NULL);
 }
@@ -141,6 +143,7 @@ bool mq_shutdown(MessageQueue *mq) {
 	mutex_lock(&mq->lock);
 	bool status = mq->shutdown;
 	mutex_unlock(&mq->lock);
+
 	return status;
 }
 
@@ -153,18 +156,24 @@ bool mq_shutdown(MessageQueue *mq) {
 void * mq_pusher(void *arg) {
 	MessageQueue *mq = (MessageQueue*) arg;
 	char buf[BUFSIZ];
+
 	while(!mq_shutdown(mq)) {
 		FILE *fs = socket_connect(mq->host, mq->port);
+
 		if(!fs) {
 			continue;
 		}
+
 		Request *r = queue_pop(mq->outgoing);
+
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
 		request_delete(r);
+
 		fclose(fs);
 	}
-    return (void*) 0;
+
+        return (void*) 0;
 }
 
 /**
@@ -174,26 +183,31 @@ void * mq_pusher(void *arg) {
  **/
 void * mq_puller(void *arg) {
 	MessageQueue *mq = (MessageQueue*) arg;
-			
-	char uri[BUFSIZ];
-	sprintf(uri, "/queue/%s", mq->name);
-
-	char buf[BUFSIZ];
+	
+        char uri[BUFSIZ];
+        char buf[BUFSIZ];
 	size_t length = 0;
+	
+        sprintf(uri, "/queue/%s", mq->name);
+	
 	while(!mq_shutdown(mq)) {
 		FILE *fs = socket_connect(mq->host, mq->port);
 		if(!fs) {
 			continue;
 		}
 		Request *r = request_create("GET", uri, NULL);
+
 		request_write(r, fs);
 		fgets(buf, BUFSIZ, fs);
+
 		if(strstr(buf, "200 OK")) {
 			while(fgets(buf, BUFSIZ, fs) && !streq(buf, "\r\n")) {
 				sscanf(buf, "Content-Length: %ld", &length);
 			}
+
 			r->body = calloc(length + 1, sizeof(char));
 			fread(r->body, 1, length, fs);
+
 			if(r->body) {
 				queue_push(mq->incoming, r);
 			} else {
