@@ -5,8 +5,8 @@ This is [Project 02] of [CSE.30341.FA20].
 
 ## Students
 
-1. Domer McDomerson (dmcdomer@nd.edu)
-2. Belle Fleur (bfleur@nd.edu)
+1. Paul Gierl (pgierl@nd.edu)
+2. Marcelo Castellanos Garcia (mcastel3@nd.edu)
 
 ## Brainstorming
 
@@ -57,10 +57,12 @@ brainstorming questions **are not required**.
 ## Demonstration
 
 > Link to **video demonstration** of **chat application**.
+https://www.youtube.com/watch?v=dm-LBTLx4g4&ab_channel=MarceloCastellanosGarcia
 
 ## Errata
 
 > Describe any known errors, bugs, or deviations from the requirements.
+We had no known errors by the end of our project. It took a lot of time on Monday to debug client.c but we believe we were able to complete everything error free and our own chat application terminates gracefully and can support multiple users. An issue we had was that my local machine, which is where the project repository is located, did not have python3-tornado updated so that caused some issues with server at first. 
 
 [Project 02]:       https://www3.nd.edu/~pbui/teaching/cse.30341.fa20/project02.html
 [CSE.30341.FA20]:   https://www3.nd.edu/~pbui/teaching/cse.30341.fa20/

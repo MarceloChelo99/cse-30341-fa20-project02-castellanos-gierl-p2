@@ -64,7 +64,7 @@ clean:
 	@echo "Removing  test programs"
 	@rm -f $(TEST_PROGRAMS)
 
-	@echo "Removing chat app"
+	@echo "Removing  chat app"
 	@rm -f bin/message
 
 .PRECIOUS: %.o
