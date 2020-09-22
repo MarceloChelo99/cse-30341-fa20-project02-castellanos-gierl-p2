@@ -110,10 +110,7 @@ void mq_unsubscribe(MessageQueue *mq, const char *topic) {
  * @param   mq      Message Queue structure.
  */
 void mq_start(MessageQueue *mq) {
-	char uri[BUFSIZ];
-	sprintf(uri, "/subscription/%s/%s", SENTINEL, SENTINEL);
-	Request *r = request_create("PUT", uri, NULL);
-	queue_push(mq->outgoing, r);
+	mq_subscribe(mq, SENTINEL);
 	thread_create(&mq->puller, NULL, mq_puller, (void *) mq);
 	thread_create(&mq->pusher, NULL, mq_pusher, (void *) mq);
 }
@@ -124,13 +121,10 @@ void mq_start(MessageQueue *mq) {
  * @param   mq      Message Queue structure.
  */
 void mq_stop(MessageQueue *mq) {
-	debug("beginning of stop");
 	mutex_lock(&mq->lock);
 	mq->shutdown = true;
 	mutex_unlock(&mq->lock);
 	debug("after shutdown");
-	//Request *r = (SENTINEL, NULL, NULL);
-	//queue_push(mq->outgoing, r);
     mq_publish(mq, SENTINEL, SENTINEL);
 	debug("after publish");
 	thread_join(mq->puller, NULL);

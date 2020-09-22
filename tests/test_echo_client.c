@@ -20,6 +20,7 @@ void *incoming_thread(void *arg) {
     while (!mq_shutdown(mq)) {
     	char *message = mq_retrieve(mq);
 	if (message) {
+		debug("message %s", message);
 	    assert(strstr(message, "Hello from"));
 	    free(message);
 	    messages++;
